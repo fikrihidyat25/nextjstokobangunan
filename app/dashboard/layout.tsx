@@ -89,22 +89,7 @@ export default function DashboardLayout({
         </nav>
 
         <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
-          <button
-            onClick={toggleDarkMode}
-            className="flex w-full items-center justify-center gap-2 px-4 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-          >
-            {mounted && theme === "dark" ? (
-              <>
-                <Sun size={16} />
-                Mode Terang
-              </>
-            ) : (
-              <>
-                <Moon size={16} />
-                Mode Gelap
-              </>
-            )}
-          </button>
+
           <button 
             onClick={handleLogout}
             className="flex w-full items-center justify-center gap-2 px-4 py-2 mt-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white rounded-md transition-colors"
@@ -129,6 +114,15 @@ export default function DashboardLayout({
             <div className="font-medium text-lg hidden sm:block text-zinc-800 dark:text-zinc-200">
               Admin Panel
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-md text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+              title="Toggle Dark Mode"
+            >
+              {mounted && theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
           </div>
         </header>
 
