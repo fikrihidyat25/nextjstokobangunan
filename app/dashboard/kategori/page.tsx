@@ -13,7 +13,9 @@ type Kategori = {
 
 export default function KategoriPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [kategoriList, setKategoriList] = useState<Kategori[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -42,29 +44,61 @@ export default function KategoriPage() {
     fetchKategori();
   }, []);
 
+  const handleAddClick = () => {
+    setModalMode("add");
+    setEditingId(null);
+    setNama("");
+    setDeskripsi("");
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (kat: Kategori) => {
+    setModalMode("edit");
+    setEditingId(kat.id);
+    setNama(kat.nama);
+    setDeskripsi(kat.deskripsi || "");
+    setIsModalOpen(true);
+  };
+
   const handleSimpan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nama.trim()) return;
 
-    const { data, error } = await supabase
-      .from("kategori")
-      .insert([{ nama, deskripsi }])
-      .select();
+    if (modalMode === "add") {
+      const { data, error } = await supabase
+        .from("kategori")
+        .insert([{ nama, deskripsi }])
+        .select();
 
-    if (error) {
-      alert("Gagal menyimpan kategori: " + error.message);
-      return;
-    }
+      if (error) {
+        alert("Gagal menyimpan kategori: " + error.message);
+        return;
+      }
 
-    if (data) {
-      setKategoriList([...kategoriList, data[0]]);
+      if (data) {
+        setKategoriList([...kategoriList, data[0]]);
+      }
+      alert("Kategori berhasil ditambahkan!");
+    } else {
+      const { data, error } = await supabase
+        .from("kategori")
+        .update({ nama, deskripsi })
+        .eq("id", editingId)
+        .select();
+
+      if (error) {
+        alert("Gagal mengupdate kategori: " + error.message);
+        return;
+      }
+
+      if (data) {
+        setKategoriList(kategoriList.map(k => k.id === editingId ? data[0] : k));
+      }
+      alert("Kategori berhasil diupdate!");
     }
     
-    // Reset form
-    setNama("");
-    setDeskripsi("");
-    setIsAddModalOpen(false);
-    alert("Kategori berhasil disimpan di Supabase!");
+    // Close Modal
+    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -102,7 +136,7 @@ export default function KategoriPage() {
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={handleAddClick}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors shadow-sm"
           >
             <Plus size={16} />
@@ -142,7 +176,7 @@ export default function KategoriPage() {
                         <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">{kat.deskripsi || "-"}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <button className="p-1.5 text-zinc-400 hover:text-teal-600 rounded-md transition-colors">
+                            <button onClick={() => handleEditClick(kat)} className="p-1.5 text-zinc-400 hover:text-teal-600 rounded-md transition-colors">
                               <Edit2 size={16} />
                             </button>
                             <button onClick={() => handleDelete(kat.id)} className="p-1.5 text-zinc-400 hover:text-red-500 rounded-md transition-colors">
@@ -160,14 +194,16 @@ export default function KategoriPage() {
         </div>
       </div>
 
-      {/* Add Kategori Modal */}
-      {isAddModalOpen && (
+      {/* Add/Edit Kategori Modal */}
+      {isModalOpen && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-0">
           <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-              <h2 className="text-lg font-semibold tracking-tight">Tambah Kategori Baru</h2>
+              <h2 className="text-lg font-semibold tracking-tight">
+                {modalMode === "add" ? "Tambah Kategori Baru" : "Edit Kategori"}
+              </h2>
               <button
-                onClick={() => setIsAddModalOpen(false)}
+                onClick={() => setIsModalOpen(false)}
                 className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors p-1"
               >
                 <X size={20} />
@@ -201,13 +237,13 @@ export default function KategoriPage() {
               <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80">
                 <button
                   type="button"
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 text-sm font-medium rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-black text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
                 >
                   Batal
                 </button>
                 <button type="submit" className="px-4 py-2 text-sm font-medium rounded-md bg-teal-600 text-white hover:bg-teal-700 transition-colors">
-                  Simpan Kategori
+                  {modalMode === "add" ? "Simpan Kategori" : "Update Kategori"}
                 </button>
               </div>
             </form>
