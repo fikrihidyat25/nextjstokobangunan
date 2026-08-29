@@ -20,6 +20,17 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Cara Penggunaan (User)
+
+Berikut adalah panduan singkat cara menggunakan aplikasi dari sisi pengguna:
+
+1. **Akses Aplikasi**: Buka aplikasi melalui browser (misalnya [http://localhost:3000](http://localhost:3000) jika dijalankan secara lokal).
+2. **Eksplorasi Halaman Utama**: Pada halaman beranda, Anda dapat melihat informasi utama, daftar produk atau layanan yang disediakan.
+3. **Navigasi**: Gunakan menu navigasi di bagian atas atau samping untuk berpindah antar halaman sesuai dengan fitur yang ingin Anda gunakan.
+4. **Interaksi**: Klik pada produk atau layanan untuk melihat detail lebih lanjut, dan ikuti instruksi pada layar jika ingin melakukan aksi tertentu (seperti pemesanan atau pendaftaran).
+
+*(Catatan: Panduan di atas dapat disesuaikan lebih lanjut berdasarkan fitur spesifik yang akan/telah dikembangkan pada aplikasi ini).*
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
