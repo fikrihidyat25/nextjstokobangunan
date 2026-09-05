@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Package, LayoutGrid, Settings, LogOut, X, Moon, Sun, Tags, Box, Menu } from "lucide-react";
+import { Package, LayoutGrid, Settings, LogOut, X, Moon, Sun, Tags, Box, Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -17,10 +17,24 @@ export default function DashboardLayout({
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
+  const [isAutoMode, setIsAutoMode] = useState(false);
+
   // Avoid hydration mismatch by waiting for mount
   useEffect(() => setMounted(true), []);
 
+  // Auto Theme Toggle (Disco Mode)
+  useEffect(() => {
+    if (!mounted || !isAutoMode) return;
+    
+    const timer = setTimeout(() => {
+      setTheme(theme === "dark" ? "light" : "dark");
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [mounted, isAutoMode, theme, setTheme]);
+
   const toggleDarkMode = () => {
+    setIsAutoMode(false); // Stop auto mode if manual toggle is clicked
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
@@ -30,7 +44,7 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { name: "Inventory", path: "/dashboard", icon: LayoutGrid },
+    { name: "Daftar Barang", path: "/dashboard", icon: LayoutGrid },
     { name: "Produk", path: "/dashboard/produk", icon: Box },
     { name: "Kategori", path: "/dashboard/kategori", icon: Tags },
   ];
@@ -116,6 +130,17 @@ export default function DashboardLayout({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsAutoMode(!isAutoMode)}
+              className={`p-2 rounded-md transition-colors ${
+                isAutoMode
+                  ? "text-teal-600 bg-teal-50 dark:bg-teal-500/10 dark:text-teal-400"
+                  : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              }`}
+              title="Auto Toggle Mode (Disco!)"
+            >
+              <Sparkles size={20} className={isAutoMode ? "animate-pulse" : ""} />
+            </button>
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded-md text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Edit2, Trash2, X, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, X, Image as ImageIcon, ZoomIn, ExternalLink } from "lucide-react";
 
 import { createClient } from "@/src/lib/supabase/client";
 
@@ -42,6 +42,13 @@ export default function ProdukPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Lightbox / Image Zoom State
+  const [previewImage, setPreviewImage] = useState<{
+    url: string;
+    title: string;
+    category?: string;
+  } | null>(null);
+
   const supabase = createClient();
 
   const fetchData = async () => {
@@ -61,6 +68,16 @@ export default function ProdukPage() {
     fetchData();
   }, []);
 
+  // Close preview modal with Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPreviewImage(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
   const handleAddClick = () => {
     setModalMode("add");
     setEditingId(null);
@@ -264,7 +281,27 @@ export default function ProdukPage() {
                         <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
                           <td className="px-4 py-3">
                             {p.gambar ? (
-                              <img src={p.gambar} alt={p.merek} className="w-10 h-10 rounded object-cover border border-zinc-200 dark:border-zinc-700" />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPreviewImage({
+                                    url: p.gambar!,
+                                    title: `${p.merek} ${p.tipe}${p.ukuran ? ` (${p.ukuran})` : ""}`,
+                                    category: kat?.nama || "",
+                                  })
+                                }
+                                className="group relative block w-10 h-10 rounded overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:border-teal-500 dark:hover:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all cursor-zoom-in text-left shadow-sm"
+                                title="Klik untuk memperbesar gambar"
+                              >
+                                <img
+                                  src={p.gambar}
+                                  alt={p.merek}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                  <ZoomIn size={14} className="text-white drop-shadow" />
+                                </div>
+                              </button>
                             ) : (
                               <div className="w-10 h-10 rounded bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
                                 <ImageIcon size={18} />
@@ -302,7 +339,7 @@ export default function ProdukPage() {
 
       {/* Add/Edit Product Modal */}
       {isModalOpen && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-0">
           <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
               <h2 className="text-lg font-semibold tracking-tight">
@@ -372,12 +409,27 @@ export default function ProdukPage() {
                   <div className="mt-1 flex justify-center rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 px-6 py-8 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
                     <div className="text-center">
                       {gambarUrl ? (
-                        <div className="flex flex-col items-center gap-3">
-                          <img src={gambarUrl} alt="Preview" className="max-h-32 rounded-md object-contain" />
+                        <div className="flex flex-col items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewImage({
+                                url: gambarUrl,
+                                title: merek ? `${merek} ${tipe}${ukuran ? ` (${ukuran})` : ""}` : "Preview Gambar Produk",
+                              })
+                            }
+                            className="group relative block rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:border-teal-500 cursor-zoom-in"
+                            title="Klik untuk memperbesar gambar"
+                          >
+                            <img src={gambarUrl} alt="Preview" className="max-h-32 rounded-md object-contain group-hover:scale-105 transition-transform duration-200" />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-md">
+                              <ZoomIn size={20} className="text-white drop-shadow" />
+                            </div>
+                          </button>
                           <button 
                             type="button" 
                             onClick={() => setGambarUrl(null)} 
-                            className="text-xs text-red-500 hover:text-red-700"
+                            className="text-xs text-red-500 hover:text-red-700 hover:underline"
                           >
                             Hapus Gambar
                           </button>
@@ -449,6 +501,68 @@ export default function ProdukPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox / Modal Perbesar Gambar */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setPreviewImage(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="relative max-w-2xl w-full max-h-[90vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header Modal */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90">
+              <div className="min-w-0 pr-4">
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                  {previewImage.title || "Detail Gambar"}
+                </h3>
+                {previewImage.category && (
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {previewImage.category}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                title="Tutup (Esc)"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Area Gambar Utama */}
+            <div className="p-4 sm:p-6 flex items-center justify-center bg-zinc-100/50 dark:bg-black/50 overflow-auto max-h-[calc(90vh-120px)]">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title}
+                className="max-h-[65vh] w-auto max-w-full object-contain rounded-lg shadow-md select-none"
+              />
+            </div>
+
+            {/* Footer Modal */}
+            <div className="px-5 py-3 bg-zinc-50 dark:bg-zinc-900/90 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="hidden sm:inline">
+                Klik di luar atau tekan <kbd className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded text-zinc-700 dark:text-zinc-300 font-mono text-[10px]">Esc</kbd> untuk menutup
+              </span>
+              <a
+                href={previewImage.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-teal-600 dark:text-teal-400 hover:underline ml-auto font-medium"
+              >
+                <span>Buka ukuran penuh</span>
+                <ExternalLink size={12} />
+              </a>
+            </div>
           </div>
         </div>
       )}
