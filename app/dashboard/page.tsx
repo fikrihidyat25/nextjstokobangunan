@@ -65,15 +65,6 @@ const StockBadge = ({ count }: { count: number }) => {
   }
 };
 
-const getDeterministicStock = (id: string) => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash << 5) - hash + id.charCodeAt(i);
-    hash |= 0;
-  }
-  const levels = [24, 15, 8, 42, 18, 35, 6, 12, 50, 20, 65, 0, 16, 28, 4, 30];
-  return levels[Math.abs(hash) % levels.length];
-};
 
 export default function DashboardInventory() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -134,8 +125,8 @@ export default function DashboardInventory() {
         size: item.ukuran || "-",
         sku: item.sku,
         price: item.harga,
-        // Single unified stock (from DB if exists, otherwise realistic deterministic count for portfolio display)
-        stock: (item.stok !== undefined && item.stok !== null) ? item.stok : getDeterministicStock(item.id),
+        // Single unified stock for the whole store (no more separate ruko columns)
+        stock: item.stok ?? 0,
         image: item.gambar || null,
       }));
       setInventory(formattedData);
