@@ -118,15 +118,28 @@ export default function DashboardLayout({
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Action Bar (Global for Dashboard) */}
         <header className="h-16 flex shrink-0 items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm">
-          <div className="flex items-center gap-4 flex-1">
+          <div className="flex items-center gap-3 flex-1">
             <button
               className="md:hidden p-2 -ml-2 rounded-md text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
               onClick={() => setIsSidebarOpen(true)}
+              aria-label="Buka Menu"
             >
               <Menu size={20} />
             </button>
-            <div className="font-medium text-lg hidden sm:block text-zinc-800 dark:text-zinc-200">
-              Admin Panel
+
+            {/* Logo & Nama Toko di Header (Tampil di Mobile & Desktop) */}
+            <div className="flex items-center gap-2.5">
+              <div className="bg-teal-500 text-white p-1.5 rounded-lg shadow-xs">
+                <Package size={18} />
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                <span className="font-bold text-sm sm:text-base tracking-tight text-zinc-900 dark:text-zinc-100">
+                  TB. Sumber Jaya
+                </span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                  • Admin Inventori
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
